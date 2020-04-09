@@ -6,13 +6,15 @@ const mongoose = require("mongoose");
 const app = express();
 const _ = require("lodash");
 
-// Use
+// Use body Parser to receive forms inputs values
 app.use(bodyParser.urlencoded({
   extended: true
 }));
 
+// Make public folder available
 app.use(express.static("public"));
 
+// Conect to MongoDB
 mongoose.connect("mongodb://localhost:27017/todolistDB", {
   useUnifiedTopology: true,
   useNewUrlParser: true
@@ -30,19 +32,18 @@ const itemsSchema = {
 //Mongoose model is usually Capitalized
 const Item = mongoose.model("Item", itemsSchema);
 
-//Creating a document
+//Create standard documents
 const item1 = new Item({
   item: "Welcome to your todolist!"
 });
-
 const item2 = new Item({
   item: "Hit the + button to add new item."
 });
-
 const item3 = new Item({
   item: "<-- Hit this to delete and item"
 });
 
+// Create an array of items
 const defaultItems = [item1, item2, item3];
 
 // Create Custom list Schema
@@ -51,25 +52,11 @@ const listSchema = {
   items : [itemsSchema]
 };
 
-// Create
+// Create a mongoose model to the custom lists
 const List = mongoose.model("List", listSchema);
 
+// Receive get request on root route
 app.get("/", function(req, res) {
-  // res.send("Hello");
-
-  // let options = {
-  //   weekday: 'long',
-  //   // year: 'numeric',
-  //   month: 'long',
-  //   day: 'numeric'
-  // };
-  //
-  // let today = new Date();
-  //
-  // // console.log(today.toLocaleDateString("en-US")); // 9/17/2016
-  // day = today.toLocaleDateString("en-US", options); // Saturday, September 17, 2016
-  // let day = date.getDate(); // Simplify the code
-
   Item.find({}, function(err, results) {
     if (err) {
       console.log("Found error");
@@ -93,20 +80,7 @@ app.get("/", function(req, res) {
   });
 });
 
-// app.post("/", function(req, res) {
-//   console.log(req.body);
-//   // req.body.list returns the value of <%= listTitle %> from the button
-//   // "name"=list
-//   if (req.body.list === "Work"){
-//     workItems.push(req.body.newItem);
-//     res.redirect("/work");
-//   } else {
-//     item.push(req.body.newItem);
-//     console.log(req.body.newItem);
-//     res.redirect("/"); // Redirect to home reoute.
-//   }
-// });
-
+// Receive post request on root rout
 app.post("/", function(req, res) {
   const itemName = req.body.newItem;
   const listName = req.body.list;
@@ -115,7 +89,7 @@ app.post("/", function(req, res) {
   });
   item.save();
   console.log(req.body.newItem);
-  res.redirect("/"); // Redirect to home reoute.
+  res.redirect("/"); // Redirect to home route.
 });
 
 // Receive post request do delete list items
@@ -136,6 +110,7 @@ app.post("/delete", function(req, res){
     });
     res.redirect("/");
   } else {
+    // Find an ID inside an array in a document
     List.findOneAndUpdate(
       {name: listName},
       {$pull: {items: {_id: checkItemId}}},
@@ -155,7 +130,7 @@ app.post("/delete", function(req, res){
 // Custom list name using Express Route Parameters
 app.get("/:pageName", function(req, res){
   const customListName = _.capitalize(req.params.pageName);
-  console.log(customListName);
+  console.log("Get request to: "+customListName);
   List.findOne({name: customListName}, function(err, result){
     if (!err){
       if (!result){
@@ -168,7 +143,6 @@ app.get("/:pageName", function(req, res){
         res.redirect("/" + customListName);
       } else{
         // render an existing listTitle
-        console.log("Created new list");
         // const route = ("/"+req.params.pageName);
         const url = ("/"+customListName);
         res.render("list", {
@@ -183,29 +157,31 @@ app.get("/:pageName", function(req, res){
 });
 
 app.post("/:pageName", function(req, res) {
-  console.log("Page: " + req.params.pageName + ", Input Value: " + req.body.newItem);
-  console.log("List Name: " + req.body.list);
+  // Receive the value of the button name equals to list
+  listName = req.body.list;
+  itemFilled = _.capitalize(req.body.newItem);
+  // req.params.pageName is equal to the "pageName"
+  console.log("Post request in list: " +
+    req.params.pageName + ", to add new item: " + itemFilled +"\n");
 
   const newCustomItem = new Item({
-    item: req.body.newItem
+    item: itemFilled
   });
 
-  List.findOne({name: req.body.list}, function(err, searchResult){
+  List.findOne({name: listName}, function(err, searchResult){
     if (err){
       console.log("Erro na busca");
     } else {
-      console.log(searchResult);
+      // console.log(searchResult);
+      // newCustomItem needs to be an Item type
       searchResult.items.push(newCustomItem);
       searchResult.save();
-      console.log("Sucesso");
-      res.redirect("/" + req.params.pageName);
+      console.log("Success");
+      // res.redirect("/" + req.params.pageName); // Works too!
+      res.redirect("/" + listName);
     }
   });
 });
-
-// app.get("/about", function(req, res) {
-//   res.render("about");
-// });
 
 app.listen(3000, function() {
   console.log("Server running on 3000");
