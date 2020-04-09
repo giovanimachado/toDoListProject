@@ -4,13 +4,9 @@ const express = require("express");
 const bodyParser = require("body-parser");
 const mongoose = require("mongoose");
 const app = express();
-// const date = require(__dirname + "/date.js"); // require local module//
-// console.log(date);
+const _ = require("lodash");
 
-// let item = ["Buy Food", "Buy Caffe"];
-// let workItems = [];
-// let url = "";
-
+// Use
 app.use(bodyParser.urlencoded({
   extended: true
 }));
@@ -158,22 +154,23 @@ app.post("/delete", function(req, res){
 
 // Custom list name using Express Route Parameters
 app.get("/:pageName", function(req, res){
-  console.log(req.params.pageName);
-  List.findOne({name: req.params.pageName}, function(err, result){
+  const customListName = _.capitalize(req.params.pageName);
+  console.log(customListName);
+  List.findOne({name: customListName}, function(err, result){
     if (!err){
       if (!result){
         //Create a new list
         const list = new List({
-          name: req.params.pageName,
+          name: customListName,
           items: defaultItems
         });
         list.save();
-        res.redirect("/" + req.params.pageName);
+        res.redirect("/" + customListName);
       } else{
         // render an existing listTitle
         console.log("Created new list");
         // const route = ("/"+req.params.pageName);
-        const url = ("/"+req.params.pageName);
+        const url = ("/"+customListName);
         res.render("list", {
           listTitle: result.name,
           newListItem: result.items,
