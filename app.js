@@ -1,5 +1,13 @@
 //jshint esversion:6
 
+//To connect to mongoDB atlas to mongodb Sheel:
+// Choose mongo Shell VErsion 3.4 or earlier
+// mongo "mongodb://cluster0-shard-00-00-6dtk5.mongodb.net:27017,cluster0-shard-00-01-6dtk5.mongodb.net:27017,cluster0-shard-00-02-6dtk5.mongodb.net:27017/test?replicaSet=Cluster0-shard-0" --ssl --authenticationDatabase admin  --username admin-giovani --password <password>
+
+//To connect with application
+// Choose Driver Node;JS and Version 2.014 or earlier
+//mongodb://admin-giovani:<password>@cluster0-shard-00-00-6dtk5.mongodb.net:27017,cluster0-shard-00-01-6dtk5.mongodb.net:27017,cluster0-shard-00-02-6dtk5.mongodb.net:27017/<colletcionName>?ssl=true&replicaSet=Cluster0-shard-0&authSource=admin&retryWrites=true&w=majority
+
 const express = require("express");
 const bodyParser = require("body-parser");
 const mongoose = require("mongoose");
@@ -15,7 +23,7 @@ app.use(bodyParser.urlencoded({
 app.use(express.static("public"));
 
 // Conect to MongoDB
-mongoose.connect("mongodb://localhost:27017/todolistDB", {
+mongoose.connect("mongodb://admin-giovani:Test123@cluster0-shard-00-00-6dtk5.mongodb.net:27017,cluster0-shard-00-01-6dtk5.mongodb.net:27017,cluster0-shard-00-02-6dtk5.mongodb.net:27017/todolistDB?ssl=true&replicaSet=Cluster0-shard-0&authSource=admin&retryWrites=true&w=majority", {
   useUnifiedTopology: true,
   useNewUrlParser: true
 });
